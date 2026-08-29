@@ -1,0 +1,24 @@
+name: DNS (check)
+on:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_INPUT: "false"
+      TF_VAR_gcp_terraform_credentials: ${{ secrets.GCP_TERRAFORM_CREDENTIALS }}
+      TF_VAR_ovh_client_id: ${{ secrets.OVH_CLIENT_ID }}
+      TF_VAR_ovh_client_secret: ${{ secrets.OVH_CLIENT_SECRET }}
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.15.8
+      - run: terraform fmt -check -recursive
+      - run: terraform init
+      - run: terraform validate
+      - run: terraform plan
