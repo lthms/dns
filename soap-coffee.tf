@@ -62,3 +62,19 @@ resource "google_dns_record_set" "atproto_lthms_soap_coffee" {
 
   rrdatas = ["\"did=did:plc:g3m5ipqdodqbabd4ixjoosxj\""]
 }
+
+resource "ovh_domain_name_servers" "soap_coffee" {
+  domain = "soap.coffee"
+
+  # A `dynamic` block over a literal range rather than over the nameserver list:
+  # the values are only known after the zone is created, but the block count has
+  # to be known at plan time. Cloud DNS always assigns exactly four to a public
+  # zone. Trailing dot trimmed — OVH wants bare hostnames.
+  dynamic "servers" {
+    for_each = range(4)
+
+    content {
+      host = trimsuffix(google_dns_managed_zone.soap_coffee.name_servers[servers.value], ".")
+    }
+  }
+}
